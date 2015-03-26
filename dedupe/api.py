@@ -34,6 +34,13 @@ from dedupe.datamodel import DataModel
 logger = logging.getLogger(__name__)
 
 
+def sklearner(labels, examples, alpha) :
+    from sklearn.linear_model import LogisticRegression
+    learner = LogisticRegression(penalty='l2', C=1/alpha)
+    learner.fit(examples, labels)
+    weight, bias = list(learner.coef_[0]), learner.intercept_[0]
+    return weight, bias
+
 class Matching(object):
     """
     Base Class for Record Matching Classes
@@ -150,7 +157,8 @@ class Matching(object):
         for (key_1, value_1) in self.data_model.items():
             try:
                 for field in value_1 :
-                    logger.info((field.name, field.weight))
+                    if field.weight :
+                        logger.info((field.name, field.weight))
             except TypeError :
                 logger.info((key_1, value_1))
 
@@ -615,7 +623,7 @@ class ActiveMatching(Matching) :
         self.training_pairs = OrderedDict({u'distinct': [], 
                                            u'match': []})
 
-        self.learner = rlr.lr
+        self.learner = sklearner
         self.blocker = None
 
 
@@ -786,7 +794,8 @@ class ActiveMatching(Matching) :
             random_pair = self.data_sample[rand_int]
             exact_match = (random_pair[0], random_pair[0]) 
             self._addTrainingData({u'match':[exact_match, exact_match],
-                                   u'distinct':[]})
+                                   u'distinct':[random_pair]})
+            
 
 
         self._trainClassifier(0.1)

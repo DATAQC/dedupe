@@ -12,7 +12,10 @@ import time
 import random
 import optparse
 import logging
-from collections import defaultdict
+import numpy
+from collections import defaultdict, OrderedDict
+
+import rlr
 
 optp = optparse.OptionParser()
 optp.add_option('-v', '--verbose', dest='verbose', action='count',
@@ -70,11 +73,28 @@ duplicates_s = set(frozenset(pair) for pair in training_pairs['match'])
 
 t0 = time.time()
 
+class RetrainGazetteer(dedupe.StaticGazetteer, dedupe.Gazetteer) :
+    
+    def __init__(self, *args, **kwargs) :
+        super(RetrainGazetteer, self).__init__(*args, **kwargs)
+
+        training_dtype = [('label', 'S8'), 
+                          ('distances', 'f4', 
+                           (len(self.data_model['fields']), ))]
+
+        self.training_data = numpy.zeros(0, dtype=training_dtype)
+        self.training_pairs = OrderedDict({u'distinct': [], 
+                                           u'match': []})
+
+        self.learner = rlr.lr
+
+
 print('number of known duplicate pairs', len(duplicates_s))
 
 if os.path.exists(settings_file):
     with open(settings_file) as f :
-        deduper = dedupe.StaticRecordLink(f)
+        deduper = RetrainGazetteer(f)
+
 else:
     fields = [{'field': 'name', 'type': 'String'},
               {'field': 'address', 'type': 'String'},

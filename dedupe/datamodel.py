@@ -1,11 +1,13 @@
 import pkgutil
 
 from collections import OrderedDict
+from itertools import combinations_with_replacement
 
 import dedupe.variables
 import dedupe.variables.base as base
 from dedupe.variables.base import MissingDataType
 from dedupe.variables.interaction import InteractionType
+from dedupe.variables.base import DerivedType
 
 for _, module, _  in pkgutil.iter_modules(dedupe.variables.__path__, 
                                           'dedupe.variables.') :
@@ -22,13 +24,22 @@ class DataModel(dict) :
 
         primary_fields, data_model = typifyFields(fields)
         self.derived_start = len(data_model)
+        self.primary_fields = primary_fields
 
         data_model += interactions(fields, primary_fields)
         data_model += missing(data_model)
 
+        self.polynomial_expansion = []
+        # for combo in combinations_with_replacement(enumerate(data_model), 2) :
+        #     (i_1, var_1), (i_2, var_2) = combo
+        #     definition = {'name' : str((var_1.name, var_2.name)),
+        #                   'type' : 'polynomial expansion'}
+        #     data_model.append(DerivedType(definition))
+        #     self.polynomial_expansion.append((i_1, i_2))
+
         self['fields'] = data_model
         self.n_fields = len(self['fields'])
-        self.primary_fields = primary_fields
+
 
     # Changing this from a property to just a normal attribute causes
     # pickling problems, because we are removing static methods from

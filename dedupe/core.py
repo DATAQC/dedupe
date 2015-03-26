@@ -157,6 +157,13 @@ def derivedDistances(primary_distances, data_model) :
         distances[:,current_column:] =\
             1 - missing_data[:,data_model.missing_field_indices]
 
+    for interaction in data_model.polynomial_expansion :
+        distances[:,current_column] =\
+                numpy.prod(distances[:,interaction], axis=1)
+
+        current_column += 1
+
+
     return distances
 
 

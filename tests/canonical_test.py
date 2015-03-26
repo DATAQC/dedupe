@@ -83,10 +83,9 @@ if os.path.exists(settings_file):
     with open(settings_file, 'rb') as f:
         deduper = dedupe.StaticDedupe(f, 1)
 else:
-    fields = [{'field' : 'name', 'type': 'String'},
-              {'field' : 'name', 'type': 'Exact'},
-              {'field' : 'address', 'type': 'String'},
-              {'field' : 'cuisine', 'type': 'ShortString'},
+    fields = [{'field' : 'name', 'type': 'Name', 'log file' : '/tmp/names.csv'},
+              {'field' : 'address', 'type': 'Address', 'log file' : '/tmp/address.csv'},
+              {'field' : 'cuisine', 'type': 'String'},
               {'field' : 'city', 'type' : 'ShortString'}
               ]
 
